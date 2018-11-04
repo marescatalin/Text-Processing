@@ -60,30 +60,35 @@ class Retrieve:
 
             return bestArticles
 
-            #size of vector , radical din  (ADINU ALL FREQUENCIES SQUARED din document)  radical(square sum of all frequencies)
+
+
+
+
         elif (self.termWeighting == 'tfidf'):
 
-            queryIDFScores = {}
-
+            idfScore = {}
             #Compute the total number of documents / term occurance in the data set
             for term in self.index:
-                queryIDFScores[term] = self.maximumArticles/len(self.index[term].items())
+                idfScore[term] = math.log10(self.maximumArticles/len(self.index[term].items()))
 
+                # Computing the terms that are both in the query and article
+            for key in query.keys():
+                if key in self.index:
+                    for article, frequency in self.index[key].items():
+                            articleMatrix[article] += (frequency * idfScore[key])
 
-            #Compute term frequency * IDF
-            for word in query.keys():
-                if word in self.index:
-                    for article,count in self.index[word].items():
-                        articleMatrix[article] += count*query[word]*queryIDFScores[word]
-
-            #Normalise the tf computed for each article
+                # Computing the square root of the square sum of the frequency of each term for each article
             frequencySum = ([0] * (self.maximumArticles + 1))
+
             for word in self.index.keys():
                 for article, frequency in self.index[word].items():
-                    frequencySum[article] += math.pow(frequency, 2)
-            sqrFrequencySum = [math.sqrt(x) for x in frequencySum]
-            for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number]/sqrFrequencySum[number]
+                    frequencySum[article] += math.pow(frequency*(idfScore[word]), 2)
 
+                # Square root the sum for each article
+            sqrFrequencySum = [math.sqrt(x) for x in frequencySum]
+
+                # Normalise the tf computed for each article
+            for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
 
 
             for x in range(10):
@@ -92,7 +97,6 @@ class Retrieve:
                 articleMatrix[indexOfMaxValue] = 0
 
             return bestArticles
-
 
 
 
