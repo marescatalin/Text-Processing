@@ -22,6 +22,19 @@ class Retrieve:
                 if key in self.index:
                     for article,count in self.index[key].items(): articleMatrix[article] += 1
 
+            frequencySum = ([0] * (self.maximumArticles + 1))
+
+            for word in self.index.keys():
+                for article, frequency in self.index[word].items():
+                    frequencySum[article] += math.pow(1, 2)
+
+            # Square root the sum for each article
+            sqrFrequencySum = [math.sqrt(x) for x in frequencySum]
+
+            # Normalise the tf computed for each article
+            for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
+
+
             for x in range(10):
                 indexOfMaxValue = articleMatrix.index(max(articleMatrix))
                 bestArticles.append(indexOfMaxValue)
