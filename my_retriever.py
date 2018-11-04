@@ -4,12 +4,13 @@ class Retrieve:
     def __init__(self,index, termWeighting):
         self.index = index
         self.termWeighting = termWeighting
+        self.maximumArticles = 0
+
         maximumArticles = 0
         for word in self.index.keys():
             for article in self.index[word]:
-                if article > maximumArticles:
-                    maximumArticles = article
-        self.maximumArticles = maximumArticles
+                if article > self.maximumArticles:
+                    self.maximumArticles = article
 
     # Method performing retrieval for specified query
     def forQuery(self, query):
@@ -30,41 +31,60 @@ class Retrieve:
 
 
         elif (self.termWeighting == 'tf'):
+
+        #Computing the terms that are both in the query and article
             for key in query.keys():
                 if key in self.index:
-                    for article,count in self.index[key].items():
-                        articleMatrix[article] += count*query[key]
+                    for article,frequency in self.index[key].items():
+                        articleMatrix[article] += frequency*query[key]
 
-        #find how many words are in each article
-            wordsInEachArticle = ([0] * (self.maximumArticles + 1))
+        #Computing the square root of the square sum of the frequency of each term for each article
+            frequencySum = ([0] * (self.maximumArticles + 1))
+
             for word in self.index.keys():
-                for article in self.index[word]:
-                    wordsInEachArticle[article] += 1
+                for article, frequency in self.index[word].items():
+                    frequencySum[article] += math.pow(frequency, 2)
 
-            print(wordsInEachArticle)
-            breakpoint()
+            #Square root the sum for each article
+            sqrFrequencySum =[math.sqrt(x) for x in frequencySum]
 
 
-        #Divide how many words in each article by
+        #Normalise the tf computed for each article
+            for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
+
 
             for x in range(10):
                 indexOfMaxValue = articleMatrix.index( max(articleMatrix))
                 bestArticles.append(indexOfMaxValue)
                 articleMatrix[indexOfMaxValue] = 0
+
             return bestArticles
 
-
+            #size of vector , radical din  (ADINU ALL FREQUENCIES SQUARED din document)  radical(square sum of all frequencies)
         elif (self.termWeighting == 'tfidf'):
+
             queryIDFScores = {}
 
-            for word in query.keys():
-                if word in self.index:
-                    queryIDFScores[word] = self.maximumArticles/ len(self.index[word].keys())
+            #Compute the total number of documents / term occurance in the data set
+            for term in self.index:
+                queryIDFScores[term] = self.maximumArticles/len(self.index[term].items())
 
+
+            #Compute term frequency * IDF
             for word in query.keys():
                 if word in self.index:
                     for article,count in self.index[word].items():
                         articleMatrix[article] += count*query[word]*queryIDFScores[word]
+
+            #Normalise the tf computed for each article
+            frequencySum = ([0] * (self.maximumArticles + 1))
+            for word in self.index.keys():
+                for article, frequency in self.index[word].items():
+                    frequencySum[article] += math.pow(frequency, 2)
+            sqrFrequencySum = [math.sqrt(x) for x in frequencySum]
+            for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number]/sqrFrequencySum[number]
+
+
 
             for x in range(10):
                 indexOfMaxValue = articleMatrix.index(max(articleMatrix))
