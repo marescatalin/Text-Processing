@@ -23,11 +23,9 @@ class Retrieve:
             for word in self.index.keys():
                 for article, frequency in self.index[word].items():
                     frequencySum[article] += math.pow(1, 2)
-
-            # Square root the sum for each article
             sqrFrequencySum = [math.sqrt(x) for x in frequencySum]
 
-            # Normalise the tf computed for each article
+            # Compute Cosine similarity using Binary term weighting
             for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
             # return top articles
             return self.topArticles(articleMatrix)
@@ -35,21 +33,19 @@ class Retrieve:
 
         elif (self.termWeighting == 'tf'):
             #Computing the terms that are both in the query and article
-            for key in query.keys():
-                if key in self.index:
-                    for article,frequency in self.index[key].items():
-                        articleMatrix[article] += frequency*query[key]
+            for word in query.keys():
+                if word in self.index:
+                    for article,frequency in self.index[word].items():
+                        articleMatrix[article] += frequency*query[word]
 
-            #Computing the square root of the square sum of the frequency of each term for each article
+            # Compute vector size
             for word in self.index.keys():
                 for article, frequency in self.index[word].items():
                     frequencySum[article] += math.pow(frequency, 2)
-            #Square root the sum for each article
             sqrFrequencySum =[math.sqrt(x) for x in frequencySum]
 
-            #Normalise the tf computed for each article
-            for number in range(1, self.maximumArticles):
-                articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
+            # Compute Cosine similarity using TF term weighting
+            for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
             # return top articles
             return self.topArticles(articleMatrix)
 
@@ -58,17 +54,15 @@ class Retrieve:
             for key in query.keys():
                 if key in self.index:
                     for article, frequency in self.index[key].items():
-                            articleMatrix[article] += frequency * query[key] * (self.idfScore[key]**2)
+                            articleMatrix[article] += frequency * query[key] * math.pow(self.idfScore[key],2)
 
-                # Computing the square root of the square sum of the frequency of each term for each article
+            # Compute vector size
             for word in self.index.keys():
                 for article, frequency in self.index[word].items():
                     frequencySum[article] += math.pow(frequency*(self.idfScore[word]), 2)
-
-                # Square root the sum for each article
             sqrFrequencySum = [math.sqrt(x) for x in frequencySum]
 
-                # Normalise the tf computed for each article
+            # Compute Cosine similarity using TFIDF term weighting
             for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
             # return top articles
             return self.topArticles(articleMatrix)
@@ -91,10 +85,9 @@ class Retrieve:
                     maximumArticles = article
         return maximumArticles
 
-    #Compute the IDF
+    #Compute the IDF weight
     def computeIDF(self):
         idfScore = {}
         for term in self.index:
             idfScore[term] = math.log10(self.maximumArticles/len(self.index[term].items()))
         return idfScore
-
