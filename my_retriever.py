@@ -13,7 +13,6 @@ class Retrieve:
         #Declare variables to be used in the program, adding 1 so that the index matches the articleID
         bestArticles, articleMatrix, frequencySum = [], ([0] * (self.maximumArticles + 1)), ([0] * (self.maximumArticles + 1))
 
-
         if (self.termWeighting == 'binary'):
             #Compute binary weight of each term for each article
             for key in query.keys():
@@ -35,38 +34,31 @@ class Retrieve:
 
 
         elif (self.termWeighting == 'tf'):
-
-        #Computing the terms that are both in the query and article
+            #Computing the terms that are both in the query and article
             for key in query.keys():
                 if key in self.index:
                     for article,frequency in self.index[key].items():
                         articleMatrix[article] += frequency*query[key]
 
-        #Computing the square root of the square sum of the frequency of each term for each article
+            #Computing the square root of the square sum of the frequency of each term for each article
             for word in self.index.keys():
                 for article, frequency in self.index[word].items():
                     frequencySum[article] += math.pow(frequency, 2)
-
             #Square root the sum for each article
             sqrFrequencySum =[math.sqrt(x) for x in frequencySum]
 
-
-        #Normalise the tf computed for each article
-            for number in range(1, self.maximumArticles): articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
+            #Normalise the tf computed for each article
+            for number in range(1, self.maximumArticles):
+                articleMatrix[number] = articleMatrix[number] / sqrFrequencySum[number]
             # return top articles
             return self.topArticles(articleMatrix)
 
         elif (self.termWeighting == 'tfidf'):
-
-            # Compute the total number of documents / term occurance in the data set
-
-
-
-                # Computing the terms that are both in the query and article
+            # Computing the terms that are both in the query and article
             for key in query.keys():
                 if key in self.index:
                     for article, frequency in self.index[key].items():
-                            articleMatrix[article] += (frequency * self.idfScore[key])
+                            articleMatrix[article] += frequency * query[key] * (self.idfScore[key]**2)
 
                 # Computing the square root of the square sum of the frequency of each term for each article
             for word in self.index.keys():
@@ -99,6 +91,7 @@ class Retrieve:
                     maximumArticles = article
         return maximumArticles
 
+    #Compute the IDF
     def computeIDF(self):
         idfScore = {}
         for term in self.index:
