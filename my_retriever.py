@@ -22,7 +22,7 @@ class Retrieve:
             #Compute vector size
             for word in self.index.keys():
                 for article, frequency in self.index[word].items():
-                    frequencySum[article] += math.pow(1, 2)
+                    frequencySum[article] += 1
             sqrFrequencySum = [math.sqrt(x) for x in frequencySum]
 
             # Compute Cosine similarity using Binary term weighting
